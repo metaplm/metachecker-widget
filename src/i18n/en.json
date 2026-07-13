@@ -1,0 +1,207 @@
+{
+  "groups": {
+    "2D Görsel": "2D Visual",
+    "3D Görsel": "3D Visual",
+    "PLM Veri": "PLM Data",
+    "Otorite": "Authority"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "noNote": "(no note)",
+    "unnamed": "(unnamed)",
+    "error": "Error",
+    "agentSuffix": "Agent"
+  },
+  "app": {
+    "subtitle": "Checklist Rule Management",
+    "stats": {
+      "rules": "Rules",
+      "active": "Active",
+      "version": "Version",
+      "unsaved": "Unsaved"
+    },
+    "loading": "Loading schema and active config…",
+    "export": "Export YAML",
+    "history": "Version history",
+    "saveNew": "Save new version",
+    "activeVersionLabel": "Active version",
+    "historyTitle": "Version History",
+    "save": {
+      "title": "Save Version",
+      "desc": "The full list is appended as a new version (append-only). The note is written to the audit log.",
+      "noteLabel": "Change note *",
+      "author": "Author: {author}",
+      "conflict": "The config changed in the meantime (someone else may have saved). Nothing was overwritten.",
+      "reload": "Reload (local changes lost)",
+      "cannotSave": "Could not save:"
+    },
+    "err": {
+      "load": "Failed to load",
+      "cannotEnable": "'{id}' cannot be enabled — missing required: {fields}",
+      "save": "Could not save",
+      "reload": "Reload failed",
+      "refresh": "Could not refresh active config",
+      "export": "Could not export YAML",
+      "validateFailed": "Validation failed"
+    },
+    "msg": {
+      "saved": "Version #{id} saved ({count} rules).",
+      "refined": "Auto-refined rules: {list}",
+      "reloaded": "Active config reloaded.",
+      "restored": "Version #{from} restored as new #{id}."
+    }
+  },
+  "checklist": {
+    "searchPh": "Search: id, name, category",
+    "group": "Group",
+    "severity": "Severity",
+    "status": "Status",
+    "counts": "{filtered} / {total} rules · {active} active",
+    "readonlyNote": "3D checks are bound to the CATIA Worker; new checks require development. Enable/disable only.",
+    "addRule": "Add rule",
+    "add": "Add",
+    "empty": "No matching rules.",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "allTypes": "All types",
+    "helperFallback": "Helper Agent",
+    "part": "Part",
+    "assembly": "Assembly",
+    "extract": "extract",
+    "edit": {
+      "full": "editable",
+      "data_bound": "data-bound",
+      "readonly": "read-only"
+    }
+  },
+  "editor": {
+    "titleNew": "New Rule",
+    "titleView": "Rule Details",
+    "titleEdit": "Edit Rule",
+    "readonlyStrong": "Read-only.",
+    "readonlyText": " Bound to the CATIA Worker; fields cannot be changed. Enable/disable from the list.",
+    "dataBoundStrong": "Data-bound.",
+    "dataBoundText": " Query fields are picked from collected data only — no free text.",
+    "valid": "Validation passed.",
+    "drawingTypes": "Drawing types",
+    "appliesAll": "Applies to all types (Part + Assembly)",
+    "appliesSel": "Applies only to the selected type",
+    "pickHint": "Pick from collected attributes",
+    "operandA": "Operand A",
+    "op": "op",
+    "operandB": "Operand B",
+    "result": "Result:",
+    "dataMissing": "This data isn't collected yet — adding it requires development.",
+    "current": "Current:",
+    "key": "key",
+    "value": "value",
+    "addRow": "Add row",
+    "validateFirst": "Validate first to apply",
+    "validate": "Validate",
+    "apply": "Apply",
+    "delete": "Delete",
+    "sectionGeneral": "General",
+    "sectionSpecifics": "{group} specifics",
+    "listHint": "Press Enter to add",
+    "pass": {
+      "condition": "Condition",
+      "filled": "Filled (any value)",
+      "eq": "Equals (== 'X')",
+      "in": "In list",
+      "equalsValue": "equals value",
+      "inHint": "in (press Enter to add)",
+      "filledResult": "(filled — any value)"
+    },
+    "err": {
+      "validate": "Could not validate"
+    }
+  },
+  "history": {
+    "versions": "Versions",
+    "activeChip": "active",
+    "noVersions": "No versions",
+    "preview": "Version #{id} preview",
+    "previewEmpty": "Preview",
+    "restore": "Restore this version",
+    "alreadyActive": "This version is already active.",
+    "added": "+{n} added",
+    "changed": "~{n} changed",
+    "removed": "-{n} removed",
+    "col": {
+      "diff": "Diff",
+      "id": "ID",
+      "name": "Name",
+      "agent": "Agent",
+      "active": "Active"
+    },
+    "missingNote": "present in active, missing in this version",
+    "noRules": "No rules.",
+    "selectHint": "Select a version on the left.",
+    "diff": {
+      "added": "new",
+      "changed": "changed",
+      "removed": "removed"
+    },
+    "err": {
+      "list": "Could not load versions",
+      "load": "Could not load version",
+      "rollback": "Rollback failed"
+    }
+  },
+  "hermes": {
+    "newChat": "New chat",
+    "fullscreen": "Fullscreen",
+    "shrink": "Shrink",
+    "noKey": "AI assistant key is not configured.",
+    "askPrompt": "Ask MetaChecker Bot",
+    "online": {
+      "on": "online",
+      "off": "offline",
+      "connecting": "connecting…"
+    },
+    "suggestions": [
+      "Summarize the last audit run for me",
+      "Show me the active checklist rules",
+      "What's the check status of the Zenvo Aurora carbon-ceramic brake disc?",
+      "Show me the last report you checked",
+      "Show me the most common errors"
+    ],
+    "thinkingPool": [
+      "🧠 Thinking",
+      "✍️ Writing",
+      "🧠 Rethinking",
+      "🤫 Not writing",
+      "⚖️ Deciding",
+      "🔍 Scanning records",
+      "📚 Searching memory",
+      "🧩 Assembling pieces",
+      "⚙️ Running operations",
+      "🛠️ Running tools",
+      "✨ Compiling result"
+    ],
+    "typing": {
+      "thinking": "🧠 Thinking…",
+      "tools": "⚙️ Running tools…",
+      "thinkingBase": "🧠 Thinking"
+    },
+    "cancelled": "Request cancelled.",
+    "systemLang": "Respond in English.",
+    "err": {
+      "offline": "AI assistant is offline — please try again later.",
+      "auth": "Authorization error — check the access key.",
+      "server": "Server error — please try again later.",
+      "session": "Session lost — send a new message.",
+      "timeout": "The AI assistant didn't respond (timeout).",
+      "notStarted": "Could not start the request.",
+      "failed": "The request failed.",
+      "empty": "(empty response)",
+      "late": "Response is taking too long — please try again later.",
+      "generic": "Could not reach the AI assistant.",
+      "http": "Request failed (HTTP {status})."
+    }
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "groups": {
+    "2D Görsel": "2D Görsel",
+    "3D Görsel": "3D Görsel",
+    "PLM Veri": "PLM Veri",
+    "Otorite": "Otorite"
+  },
+  "common": {
+    "cancel": "İptal",
+    "close": "Kapat",
+    "save": "Kaydet",
+    "retry": "Tekrar dene",
+    "refresh": "Yenile",
+    "noNote": "(not yok)",
+    "unnamed": "(adsız)",
+    "error": "Hata",
+    "agentSuffix": "Ajan"
+  },
+  "app": {
+    "subtitle": "Kontrol Listesi Kural Yönetimi",
+    "stats": {
+      "rules": "Kural",
+      "active": "Aktif",
+      "version": "Sürüm",
+      "unsaved": "Kaydedilmedi"
+    },
+    "loading": "Şema ve aktif yapılandırma yükleniyor…",
+    "export": "YAML dışa aktar",
+    "history": "Sürüm geçmişi",
+    "saveNew": "Yeni sürüm kaydet",
+    "activeVersionLabel": "Aktif sürüm",
+    "historyTitle": "Sürüm Geçmişi",
+    "save": {
+      "title": "Sürümü Kaydet",
+      "desc": "Tüm liste yeni bir sürüm olarak eklenir (yalnızca-ekleme). Not denetim kaydına yazılır.",
+      "noteLabel": "Değişiklik notu *",
+      "author": "Yazar: {author}",
+      "conflict": "Bu sırada yapılandırma değişti (başka biri kaydetmiş olabilir). Hiçbir şey üzerine yazılmadı.",
+      "reload": "Yeniden yükle (yerel değişiklikler kaybolur)",
+      "cannotSave": "Kaydedilemedi:"
+    },
+    "err": {
+      "load": "Yüklenemedi",
+      "cannotEnable": "'{id}' etkinleştirilemez — eksik zorunlu alan: {fields}",
+      "save": "Kaydedilemedi",
+      "reload": "Yeniden yükleme başarısız",
+      "refresh": "Aktif yapılandırma yenilenemedi",
+      "export": "YAML dışa aktarılamadı",
+      "validateFailed": "Doğrulama başarısız"
+    },
+    "msg": {
+      "saved": "Sürüm #{id} kaydedildi ({count} kural).",
+      "refined": "Otomatik düzeltilen kurallar: {list}",
+      "reloaded": "Aktif yapılandırma yeniden yüklendi.",
+      "restored": "Sürüm #{from}, yeni #{id} olarak geri yüklendi."
+    }
+  },
+  "checklist": {
+    "searchPh": "Ara: id, ad, kategori",
+    "group": "Grup",
+    "severity": "Önem",
+    "status": "Durum",
+    "counts": "{filtered} / {total} kural · {active} aktif",
+    "readonlyNote": "3D kontrolleri CATIA Worker'a bağlıdır; yeni kontroller geliştirme gerektirir. Yalnızca aç/kapat.",
+    "addRule": "Kural ekle",
+    "add": "Ekle",
+    "empty": "Eşleşen kural yok.",
+    "statusActive": "Aktif",
+    "statusInactive": "Pasif",
+    "allTypes": "Tüm tipler",
+    "helperFallback": "Yardımcı Ajan",
+    "part": "Parça",
+    "assembly": "Montaj",
+    "extract": "çıkarım",
+    "edit": {
+      "full": "düzenlenebilir",
+      "data_bound": "veriye bağlı",
+      "readonly": "salt-okunur"
+    }
+  },
+  "editor": {
+    "titleNew": "Yeni Kural",
+    "titleView": "Kural Ayrıntıları",
+    "titleEdit": "Kuralı Düzenle",
+    "readonlyStrong": "Salt-okunur.",
+    "readonlyText": " CATIA Worker'a bağlı; alanlar değiştirilemez. Aç/kapatma listeden yapılır.",
+    "dataBoundStrong": "Veriye bağlı.",
+    "dataBoundText": " Sorgu alanları yalnızca toplanan veriden seçilir — serbest metin yok.",
+    "valid": "Doğrulama başarılı.",
+    "drawingTypes": "Çizim tipleri",
+    "appliesAll": "Tüm tiplere uygulanır (Parça + Montaj)",
+    "appliesSel": "Yalnızca seçili tipe uygulanır",
+    "pickHint": "Toplanan özniteliklerden seç",
+    "operandA": "İşlenen A",
+    "op": "işlem",
+    "operandB": "İşlenen B",
+    "result": "Sonuç:",
+    "dataMissing": "Bu veri henüz toplanmıyor — eklenmesi geliştirme gerektirir.",
+    "current": "Mevcut:",
+    "key": "anahtar",
+    "value": "değer",
+    "addRow": "Satır ekle",
+    "validateFirst": "Uygulamak için önce doğrula",
+    "validate": "Doğrula",
+    "apply": "Uygula",
+    "delete": "Sil",
+    "sectionGeneral": "Genel",
+    "sectionSpecifics": "{group} özel alanları",
+    "listHint": "Eklemek için Enter'a basın",
+    "pass": {
+      "condition": "Koşul",
+      "filled": "Dolu (herhangi bir değer)",
+      "eq": "Eşittir (== 'X')",
+      "in": "Listede",
+      "equalsValue": "eşit değer",
+      "inHint": "listede (eklemek için Enter)",
+      "filledResult": "(dolu — herhangi bir değer)"
+    },
+    "err": {
+      "validate": "Doğrulanamadı"
+    }
+  },
+  "history": {
+    "versions": "Sürümler",
+    "activeChip": "aktif",
+    "noVersions": "Sürüm yok",
+    "preview": "Sürüm #{id} önizleme",
+    "previewEmpty": "Önizleme",
+    "restore": "Bu sürümü geri yükle",
+    "alreadyActive": "Bu sürüm zaten aktif.",
+    "added": "+{n} eklendi",
+    "changed": "~{n} değişti",
+    "removed": "-{n} çıkarıldı",
+    "col": {
+      "diff": "Fark",
+      "id": "ID",
+      "name": "Ad",
+      "agent": "Ajan",
+      "active": "Aktif"
+    },
+    "missingNote": "aktifte var, bu sürümde yok",
+    "noRules": "Kural yok.",
+    "selectHint": "Soldan bir sürüm seçin.",
+    "diff": {
+      "added": "yeni",
+      "changed": "değişti",
+      "removed": "çıkar"
+    },
+    "err": {
+      "list": "Sürümler yüklenemedi",
+      "load": "Sürüm yüklenemedi",
+      "rollback": "Geri yükleme başarısız"
+    }
+  },
+  "hermes": {
+    "newChat": "Yeni sohbet",
+    "fullscreen": "Tam ekran",
+    "shrink": "Küçült",
+    "noKey": "Yapay zeka asistanı anahtarı tanımlı değil.",
+    "askPrompt": "MetaChecker Bot'a sorun",
+    "online": {
+      "on": "çevrimiçi",
+      "off": "çevrimdışı",
+      "connecting": "bağlanıyor…"
+    },
+    "suggestions": [
+      "Son denetimin özetini çıkarır mısın?",
+      "Aktif kuralları bana gösterir misin?",
+      "VP0 12V AGM bataryanın kontrol durumu nedir?",
+      "En son kontrol ettiğin raporu göster",
+      "En sık karşılaşılan hataları göster"
+    ],
+    "thinkingPool": [
+      "🧠 Düşünüyor",
+      "✍️ Yazıyor",
+      "🧠 Tekrar düşünüyor",
+      "🤫 Yazmıyor",
+      "⚖️ Karar veriyor",
+      "🔍 Kayıtları tarıyor",
+      "📚 Hafızayı araştırıyor",
+      "🧩 Parçaları birleştiriyor",
+      "⚙️ İşlemleri yürütüyor",
+      "🛠️ Araçları çalıştırıyor",
+      "✨ Sonucu derliyor"
+    ],
+    "typing": {
+      "thinking": "🧠 Düşünüyor…",
+      "tools": "⚙️ Araçları çalıştırıyor…",
+      "thinkingBase": "🧠 Düşünüyor"
+    },
+    "cancelled": "İstek iptal edildi.",
+    "systemLang": "Türkçe yanıt ver.",
+    "err": {
+      "offline": "Yapay zeka asistanı çevrimdışı — sonra tekrar deneyin.",
+      "auth": "Yetki hatası — erişim anahtarını kontrol edin.",
+      "server": "Sunucu hatası — sonra tekrar deneyin.",
+      "session": "Oturum düştü — yeni mesaj gönderin.",
+      "timeout": "Yapay zeka asistanı yanıt vermedi (zaman aşımı).",
+      "notStarted": "İstek başlatılamadı.",
+      "failed": "İstek başarısız oldu.",
+      "empty": "(boş yanıt)",
+      "late": "Yanıt gecikti — sonra tekrar deneyin.",
+      "generic": "Yapay zeka asistanına ulaşılamadı.",
+      "http": "İstek başarısız (HTTP {status})."
+    }
+  }
+}

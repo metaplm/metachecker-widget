@@ -1,0 +1,40 @@
+{
+  "title": "Base Widget Help",
+  "description": "PlatformInterface test widget'ı için yardım dokümantasyonu",
+  "sections": [
+    {
+      "title": "Widget Hakkında",
+      "content": "Bu widget PlatformInterface API'lerini test etmek için tasarlanmıştır. Authenticated ve Proxified request'leri test edebilirsiniz."
+    },
+    {
+      "title": "Authenticated Request",
+      "content": "3D Dashboard içinde authenticated request'ler için kullanılır. Test ID alanına bir ID girin ve 'Test Authenticated Request' butonuna tıklayın."
+    },
+    {
+      "title": "Proxified Request", 
+      "content": "Harici API'lere proxified request'ler için kullanılır. External API URL alanına bir URL girin ve 'Test Proxified Request' butonuna tıklayın."
+    },
+    {
+      "title": "Response Data",
+      "content": "Test sonuçları Response Data alanında görüntülenir. JSON formatında response'lar gösterilir."
+    },
+    {
+      "title": "Sorun Giderme",
+      "content": "Eğer request'ler başarısız olursa, console'da hata mesajlarını kontrol edin. PlatformInterface'in yüklendiğinden emin olun."
+    }
+  ],
+  "examples": [
+    {
+      "title": "Authenticated Request Örneği",
+      "description": "Test ID: 4E5027030000206068F7CF3E0000F958",
+      "url": "https://3ddashboard25x.metaplm.com/3dspace/resources/v1/modeler/dseng/dseng:EngItem/{ID}"
+    },
+    {
+      "title": "Proxified Request Örneği", 
+      "description": "JSONPlaceholder API test",
+      "url": "https://jsonplaceholder.typicode.com/posts/1"
+    }
+  ],
+  "version": "1.0.0",
+  "lastUpdated": "2025-01-25"
+}

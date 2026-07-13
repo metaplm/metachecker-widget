@@ -1,0 +1,31 @@
+services:
+  widget-base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: widget-base:latest
+    container_name: widget-base
+    ports:
+      # 8875/HTTPS yayın (nginx yok)
+      - "8875:8875"
+    volumes:
+      # SSL sertifikaları için volume mount
+      - /home/mirac/work/certificates:/home/mirac/work/certificates:ro
+      # Hot reload için tüm kaynak dosyalarını mount et
+      - ./src:/app/src
+      - ./webpack:/app/webpack
+      - ./public:/app/public
+      - ./widget-config.js:/app/widget-config.js
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      # node_modules'i host ile paylaş (node_modules'i mount etme)
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - widget-network
+    restart: unless-stopped
+
+networks:
+  widget-network:
+    driver: bridge

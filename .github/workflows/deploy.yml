@@ -1,0 +1,55 @@
+name: Build and deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Inject Hermes API key
+        env:
+          HERMES_API_KEY: ${{ secrets.HERMES_API_KEY }}
+        run: |
+          if [ -n "$HERMES_API_KEY" ]; then
+            sed -i "s/PUT_API_SERVER_KEY_HERE/$HERMES_API_KEY/" widget-config.js
+            echo "Hermes anahtarı enjekte edildi"
+          else
+            echo "UYARI: HERMES_API_KEY secret tanımlı değil — chat auth'suz kalır"
+          fi
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
