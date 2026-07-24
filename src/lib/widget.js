@@ -77,38 +77,81 @@ const UWA = function() {
     };
 };
 
+/** Standalone (uygulama) modunda kullanıcı adının saklandığı localStorage anahtarı. */
+const STANDALONE_USER_KEY = "metacheck_standalone_user";
+
+/**
+ * Uygulama (standalone) modunda mıyız? 3DDashboard içindeyken platform `UWA`/`widget`
+ * nesnelerini kendisi enjekte eder; dışarıda bunları biz mock'larız.
+ * initWidget() bunu set eder; UI/istemciler `isStandalone()` ile davranış ayarlayabilir.
+ */
+let _standalone = false;
+export function isStandalone() {
+    return _standalone;
+}
+
 /**
  * Mock the libraries provided by 3DDashboard
  */
 const initRequireModules = function() {
-    // Standalone modda 3DDashboard'un platform proxy'si yok; proxifiedRequest'i düz
-    // fetch'e çeviriyoruz (backend CORS'u açık). Hata sözleşmesi API istemcileriyle
-    // uyumlu: onFailure(error, {status, responseText}), type "json" → parse edilmiş gövde.
+    // Standalone modda 3DDashboard'un platform proxy'si YOK → WAFData'nın istek
+    // fonksiyonlarını düz fetch'e çeviriyoruz (backend CORS'u açık: Allow-Origin *).
+    // Hata sözleşmesi API istemcileriyle uyumlu tutulur:
+    //   onFailure(error, {status, responseText}) / onTimeout(error)
+    //   type "json" → parse edilmiş gövde, "text" → ham string.
+    // NOT: bu define YALNIZCA standalone dalında çalışır (initWidget). 3DDashboard
+    // içinde platformun gerçek WAFData'sı kullanılır — widget modu etkilenmez.
+    const fetchAsWAFData = (url, options) => {
+        const o = options || {};
+        const type = o.type || "json";
+        // Timeout: platform WAFData'sı onTimeout çağırır; fetch'te AbortController ile taklit.
+        const ms = typeof o.timeout === "number" ? o.timeout : 120000;
+        const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timer = ctrl ? setTimeout(() => ctrl.abort(), ms) : null;
+
+        fetch(url, {
+            method: o.method || "GET",
+            headers: o.headers || {},
+            body: o.data,
+            // Allow-Origin "*" ile cookie gönderilemez; standalone'da 3DX oturumu da yok.
+            credentials: "omit",
+            signal: ctrl ? ctrl.signal : undefined
+        })
+            .then(async res => {
+                if (timer) clearTimeout(timer);
+                const text = await res.text();
+                if (!res.ok) {
+                    if (o.onFailure) o.onFailure(res.statusText, { status: res.status, responseText: text });
+                    return;
+                }
+                let body = text;
+                if (type === "json") {
+                    try {
+                        body = text ? JSON.parse(text) : null;
+                    } catch {
+                        body = text;
+                    }
+                }
+                if (o.onComplete) o.onComplete(body);
+            })
+            .catch(err => {
+                if (timer) clearTimeout(timer);
+                if (err && err.name === "AbortError") {
+                    if (o.onTimeout) o.onTimeout(new Error(`Zaman aşımı (${ms}ms)`));
+                    else if (o.onFailure) o.onFailure("timeout", { status: 0 });
+                    return;
+                }
+                if (o.onFailure) o.onFailure((err && err.message) || "network error", { status: 0 });
+            });
+    };
+
     define("DS/WAFData/WAFData", [], () => ({
-        proxifiedRequest: (url, options) => {
-            const o = options || {};
-            const type = o.type || "json";
-            fetch(url, { method: o.method || "GET", headers: o.headers || {}, body: o.data })
-                .then(async res => {
-                    const text = await res.text();
-                    if (!res.ok) {
-                        if (o.onFailure) o.onFailure(res.statusText, { status: res.status, responseText: text });
-                        return;
-                    }
-                    let body = text;
-                    if (type === "json") {
-                        try {
-                            body = text ? JSON.parse(text) : null;
-                        } catch {
-                            body = text;
-                        }
-                    }
-                    if (o.onComplete) o.onComplete(body);
-                })
-                .catch(err => {
-                    if (o.onFailure) o.onFailure((err && err.message) || "network error", { status: 0 });
-                });
-        }
+        // MetaChecker/Hermes/Lang istemcilerinin kullandığı yol.
+        proxifiedRequest: fetchAsWAFData,
+        // Platform3DSpace gibi 3DX servislerine giden yol. Standalone'da 3DX oturumu
+        // OLMADIĞI için bu çağrılar kimlik doğrulamasız gider (3DX tarafı 302/401 döner) —
+        // ama tanımsız fonksiyon hatasıyla ÇÖKMEZ, düzgün onFailure ile döner.
+        authenticatedRequest: fetchAsWAFData
     }));
     define("DS/TagNavigatorProxy/TagNavigatorProxy", [], () => {
         const TagNavigatorProxy = function() {
@@ -123,20 +166,26 @@ const initRequireModules = function() {
     });
     define("DS/PlatformAPI/PlatformAPI", [], () => {
         const PlatformAPI = function() {
+            // Standalone'da 3DX oturumu yok → gerçek kullanıcı bilinemez.
+            // ESKİDEN buraya Dassault örnek kullanıcısı ("RG0 / Rodrigo Sanchez") dönüyordu;
+            // bu login checklist sürümlerinde `author` olarak KAYDEDİLİYOR → sahte atıf.
+            // Artık localStorage'daki ada düşer, yoksa dürüstçe "standalone" der.
+            // Kullanıcı adını ayarlamak için konsoldan: metacheckSetUser("ad.soyad")
             this.getUser = () => {
+                let login = "";
+                try {
+                    login = (localStorage.getItem(STANDALONE_USER_KEY) || "").trim();
+                } catch {
+                    login = "";
+                }
                 return {
-                    address: "An address for test purpose",
-                    city: "VelizyLand",
-                    email: "rogrigo@hotmail.com",
-                    enabled: true,
-                    firstname: "Rodrigo",
-                    id: 7,
+                    login: login || "standalone",
+                    email: "",
+                    firstname: "",
+                    lastName: "",
                     language: "en",
-                    lastName: "Sanchez",
-                    login: "RG0",
+                    enabled: true,
                     superUser: false,
-                    telephone: "",
-                    type: 3,
                     properties: {}
                 };
             };
@@ -195,15 +244,29 @@ export function initWidget(cbOk, cbError) {
         updatePublicPath();
         cbOk(widget);
     } else if (!window.UWA) {
-        // outside of 3DDashboard
+        // 3DDashboard DIŞINDA → uygulama (standalone) modu.
+        // Platform proxy'si yerine fetch tabanlı WAFData shim'i devreye girer.
+        _standalone = true;
         window.widget = new Widget();
         window.UWA = new UWA();
-        loadRequire().then(() => {
-            initRequireModules();
-        });
-        waitFor("requirejs", 10, () => {
-            cbOk(window.widget);
-        });
+        // Standalone'da `author` için kullanıcı adı ayarlama kolaylığı (konsoldan).
+        window.metacheckSetUser = name => {
+            const v = String(name || "").trim();
+            if (v) localStorage.setItem(STANDALONE_USER_KEY, v);
+            else localStorage.removeItem(STANDALONE_USER_KEY);
+            return v || "standalone";
+        };
+        // requirejs YÜKLENDİKTEN ve modüller TANIMLANDIKTAN sonra devam et; aksi halde
+        // uygulama DS/WAFData'yı dosya olarak indirmeye çalışır (404) — yarış durumu.
+        loadRequire()
+            .then(() => {
+                initRequireModules();
+                cbOk(window.widget);
+            })
+            .catch(err => {
+                console.error(err);
+                if (cbError) cbError(err);
+            });
     } else {
         // in 3DDashboard
         try {
