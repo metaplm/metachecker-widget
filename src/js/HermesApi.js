@@ -20,7 +20,7 @@
 const CFG = (typeof __HERMES_CONFIG__ !== "undefined" && __HERMES_CONFIG__) || {};
 /* eslint-enable no-undef */
 
-const BASE = CFG.baseUrl || "https://metachecker.metaplm.com/hermes";
+const BASE = CFG.baseUrl || "https://metachecker.meta-plm.com/hermes";
 const RAW_KEY = CFG.apiKey || "";
 // Placeholder hâlâ doldurulmamışsa "anahtar yok" say (UI uyarısı tetiklensin).
 const API_KEY = RAW_KEY === "PUT_API_SERVER_KEY_HERE" ? "" : RAW_KEY;

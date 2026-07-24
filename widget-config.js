@@ -5,7 +5,7 @@
  *             backend lokal yığın (metachecker.metaplm.local), tarayıcıların güvendiği
  *             kök META PLM Root CA.
  *   oncloud → her şey buluta çıkar: 3DX Cloud tenant'ının kendi dashboard'u (3ds.com),
- *             backend GCE (metachecker.metaplm.com). Proxified istekler DASSAULT
+ *             backend GCE (metachecker.meta-plm.com). Proxified istekler DASSAULT
  *             bulutundan çıkar → backend internetten erişilebilir ve public-güvenilen
  *             sertifikalı olmalı (META CA yetmez!).
  *
@@ -14,9 +14,6 @@
  * target değişince webpack/dev-server RESTART gerekir.
  */
 
-// Hedef seçimi: WIDGET_TARGET açıkça verilirse o; verilmezse CI'da (GitHub Actions →
-// Pages) "oncloud" (public GCE backend + 3DX Cloud dashboard), lokal geliştirmede
-// "onprem" (LAN). Böylece deploy.yml'a dokunmadan Pages doğru hedefle build eder.
 const target = process.env.WIDGET_TARGET || (process.env.CI ? "oncloud" : "onprem");
 
 const CERT_DIR = "/home/mirac/work/certificates";
@@ -33,6 +30,8 @@ const presets = {
         apiBase: "https://metachecker.metaplm.local",
         // On-prem R2025x dashboard — CORS origin'i ve /DS proxy hedefi buradan türetilir.
         dashboardOrigin: "https://3ddashboard.metaplm.local",
+        // PLM federated search — on-prem 3DSearch (LAN: 192.168.1.201).
+        executeQueryService: "https://3dsearch25x.metaplm.com/federated/search?xrequestedwith=xmlhttprequest",
         // META PLM Root CA imzalı wildcard — istemcilerin güvendiği kök bu.
         tls: {
             key: `${CERT_DIR}/wildcard.metaplm.local.key`,
@@ -45,11 +44,16 @@ const presets = {
         // hosttan (örn. GCE nginx /metachecker-widget/) servis edilmeli.
         widgetUrl: "https://dev.metaplm.com:8875/metachecker-widget/",
         // GCE üretim backend'i. Bulut dashboard'un platform proxy'si Dassault tarafında
-        // koştuğu için bu adres internetten erişilebilir + public CA sertifikalı olmalı.
+        // koştuğu için internetten erişilebilir + public CA sertifikalı olmalı.
+        // PUBLIC DNS: metachecker.meta-plm.com → 34.159.49.34.
+        // DİKKAT: tiresiz "metaplm.com" 192.168.1.204'e (LAN) çözülür, bulut için YANLIŞ.
         apiBase: "https://metachecker.meta-plm.com",
-        // Tenant'ın bulut dashboard'u (PASSPORT_URL kalıbından türetildi — kayıttan önce
-        // gerçek adresi tarayıcıdan doğrula!).
-        dashboardOrigin: "https://r1132101868454-eu1-3ddashboard.3dexperience.3ds.com",
+        // Tenant'ın bulut dashboard'u — cloud.env DASHBOARD_URL ile aynı, DNS+HTTPS 200
+        // ile doğrulandı (24 Tem 2026). Eskiden "-3ddashboard" yazıyordu: o host HİÇ YOK.
+        dashboardOrigin: "https://r1132101868454-eu1-ifwe.3dexperience.3ds.com",
+        // PLM federated search — tenant'ın bulut 3DSearch'ü (DNS var; /federated/search 302,
+        // ?xrequestedwith=xmlhttprequest 400 → endpoint doğrulandı).
+        executeQueryService: "https://r1132101868454-eu1-fedsearch.3dexperience.3ds.com/federated/search?xrequestedwith=xmlhttprequest",
         tls: {
             key: `${CERT_DIR}/serverkey.key`,
             cert: `${CERT_DIR}/servercert.crt`
@@ -80,8 +84,9 @@ const cfg = {
         //   proxy'nin koştuğu yerden çözülebilir/erişilebilir olmalı, yoksa UI'da 504.
         apiBase: p.apiBase,
 
-        // Execute Query Service - Ayarlanabilir backend adresi
-        executeQueryService: "https://3dsearch25x.metaplm.com/federated/search?xrequestedwith=xmlhttprequest"
+        // PLM federated search — HEDEFE GÖRE değişir (preset'ten gelir). Sabit yazılırsa
+        // bulut build'i de LAN'daki 3DSearch'e gider ve public widget'ta arama çalışmaz.
+        executeQueryService: p.executeQueryService
     },
 
     // Dashboard origin'i — webpack dev CORS başlığı + /DS proxy hedefi bunu kullanır.
@@ -89,10 +94,9 @@ const cfg = {
         origin: p.dashboardOrigin
     },
 
-    // Hermes ajan sohbeti (OpenAI-uyumlu). apiKey build sırasında bundle'a gömülür.
-    // GERÇEK anahtar repoya GİRMEZ: CI'da (GitHub Actions secret: HERMES_API_KEY)
-    // PUT_API_SERVER_KEY_HERE placeholder'ı ile değiştirilir. Placeholder kalırsa
-    // HermesApi anahtar göndermez (chat auth'suz kalır). Taban backend ile aynı hosttan.
+    // Hermes ajan sohbeti (OpenAI-uyumlu). GERÇEK anahtar repoya GİRMEZ: CI'da
+    // (GitHub Actions secret HERMES_API_KEY) placeholder sed ile değiştirilir.
+    // Taban, backend ile aynı hosttan /hermes yoluna gider.
     hermes: {
         baseUrl: `${p.apiBase}/hermes`,
         model: "MetaChecker Hermes",

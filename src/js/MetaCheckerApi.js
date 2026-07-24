@@ -18,7 +18,7 @@ const BACKEND = (typeof __BACKEND_CONFIG__ !== "undefined" && __BACKEND_CONFIG__
 
 // API kökü build sırasında gömülür (widget-config.js → backend.apiBase);
 // yoksa üretim adresine düşer.
-const BASE = (BACKEND.apiBase || "https://metachecker.metaplm.com").replace(/\/+$/, "") + "/api/checklist";
+const BASE = (BACKEND.apiBase || "https://metachecker.meta-plm.com").replace(/\/+$/, "") + "/api/checklist";
 
 /**
  * 3DDashboard tarafından sağlanan WAFData modülünü yükler.
