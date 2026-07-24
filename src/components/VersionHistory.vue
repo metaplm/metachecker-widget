@@ -95,7 +95,7 @@
                   </v-chip>
                 </td>
                 <td class="text-mono">{{ it.id }}</td>
-                <td>{{ it.name_en || it.name }}</td>
+                <td>{{ ruleName(it, locale) }}</td>
                 <td>{{ agentLabel(it.agent) }}</td>
                 <td>
                   <v-icon size="small" :color="it.enabled ? 'success' : 'grey'">
@@ -125,6 +125,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import MetaCheckerApi, { getCurrentUser } from "../js/MetaCheckerApi";
+import { ruleName } from "../js/checklistRules";
 
 const { t, locale } = useI18n();
 /** Agent label display: code + "Agent" suffix. */

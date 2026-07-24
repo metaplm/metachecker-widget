@@ -201,10 +201,8 @@
       <v-card-actions class="mc-edit__foot">
         <v-btn v-if="!isNew && !readonly" color="error" variant="text" prepend-icon="mdi-delete-outline" @click="$emit('delete', item)">{{ $t('editor.delete') }}</v-btn>
         <v-spacer />
-        <span v-if="!readonly && !(validated && valid)" class="text-caption text-medium-emphasis mr-2">{{ $t('editor.validateFirst') }}</span>
         <v-btn variant="text" @click="$emit('close')">{{ readonly ? $t('common.close') : $t('common.cancel') }}</v-btn>
-        <v-btn v-if="!readonly" variant="tonal" color="primary" prepend-icon="mdi-shield-check" :loading="validating" @click="runValidate">{{ $t('editor.validate') }}</v-btn>
-        <v-btn v-if="!readonly" color="primary" variant="flat" class="px-6" prepend-icon="mdi-check" :disabled="!validated || !valid" @click="apply">
+        <v-btn v-if="!readonly" color="primary" variant="flat" class="px-6" prepend-icon="mdi-check" :loading="validating" @click="apply">
           {{ isNew ? $t('checklist.addRule') : $t('editor.apply') }}
         </v-btn>
       </v-card-actions>
@@ -216,9 +214,9 @@
 import { ref, reactive, computed, watch, toRaw } from "vue";
 import { useI18n } from "vue-i18n";
 import MetaCheckerApi from "../js/MetaCheckerApi";
-import { groupInfo, plmAttributes, crossFields, agentColor } from "../js/checklistRules";
+import { groupInfo, plmAttributes, crossFields, agentColor, ruleName } from "../js/checklistRules";
 
-const { t, te } = useI18n();
+const { t, te, locale } = useI18n();
 /** Group label display: translate if in catalog, otherwise show raw (backend) value. */
 function groupDisplay(g) {
   const k = `groups.${g}`;
@@ -304,7 +302,8 @@ const FIELD_LABEL_TRANSLATIONS = {
 };
 
 function translateFieldLabel(label) {
-  if (!label) return label;
+  // backend labels are already Turkish — translate only when the UI is NOT Turkish
+  if (!label || locale.value === "tr") return label;
   return FIELD_LABEL_TRANSLATIONS[label] || label;
 }
 
@@ -329,7 +328,7 @@ const HELP_TEXT_TRANSLATIONS = {
 };
 
 function translateHelpText(text) {
-  if (!text) return text;
+  if (!text || locale.value === "tr") return text;
   return HELP_TEXT_TRANSLATIONS[text] || text;
 }
 
@@ -352,11 +351,9 @@ const OPTION_LABEL_TRANSLATIONS = {
 
 function translateOptionTitle(opt) {
   // Vuetify passes either the raw primitive item or the resolved object.
-  if (opt && typeof opt === "object") {
-    const t = opt.title ?? opt.text ?? opt.label ?? opt.value;
-    return OPTION_LABEL_TRANSLATIONS[t] || t;
-  }
-  return OPTION_LABEL_TRANSLATIONS[opt] || opt;
+  const title = opt && typeof opt === "object" ? opt.title ?? opt.text ?? opt.label ?? opt.value : opt;
+  if (locale.value === "tr") return title;
+  return OPTION_LABEL_TRANSLATIONS[title] || title;
 }
 
 const props = defineProps({
@@ -375,9 +372,11 @@ const emit = defineEmits(["close", "apply", "delete"]);
 // batch_question: handled by LLM backend · enabled: toggled from list
 // extract_only: every rule is always scored (default false fixed) · aggregation/extract_fields:
 //   internal data pipeline fields, meaningless to users → hide but preserve existing values
+// cross_sources: nested objects ({source, item, field}) — auto-derived from the cross_query
+//   builder operands; the generic key-value editor would corrupt them
 const HIDDEN = new Set([
   "id", "category", "agent", "batch_question", "enabled",
-  "extract_only", "aggregation", "extract_fields"
+  "extract_only", "aggregation", "extract_fields", "cross_sources"
 ]);
 
 const form = ref(null);
@@ -395,7 +394,7 @@ const editable = computed(() => gInfo.value.editable);
 const readonly = computed(() => editable.value === "readonly");
 const groupLabel = computed(() => groupDisplay(gInfo.value.group || (form.value && form.value.agent) || ""));
 const accent = computed(() => agentColor(form.value && form.value.agent));
-const displayName = computed(() => (form.value && (form.value.name_en || form.value.name)) || t("common.unnamed"));
+const displayName = computed(() => ruleName(form.value, locale.value) || t("common.unnamed"));
 const headIcon = computed(() => (props.isNew ? "mdi-plus-box" : readonly.value ? "mdi-lock-outline" : "mdi-pencil-box"));
 const editLabel = computed(() => {
   const k = `checklist.edit.${editable.value}`;
@@ -414,8 +413,14 @@ const applicableFields = computed(() => {
     return f.agents.includes(agent);
   });
 });
-/* fields shown in form (excluding hidden) */
-const renderFields = computed(() => applicableFields.value.filter(f => !HIDDEN.has(f.key)));
+/* fields shown in form (excluding hidden; scope hidden too when there is only one valid option) */
+const renderFields = computed(() =>
+  applicableFields.value.filter(f => {
+    if (HIDDEN.has(f.key)) return false;
+    if (f.key === "scope" && scopeOptions.value.length <= 1) return false;
+    return true;
+  })
+);
 
 const totalAgents = computed(() => (props.schema.agents || []).length);
 function isCommonField(f) {
@@ -445,8 +450,13 @@ const is2D = computed(() => {
 });
 const scopeOptions = computed(() => {
   const all = props.schema.scopes || [];
-  return is2D.value ? all.filter(s => s !== "PLM_ONLY") : all.filter(s => s === "PLM_ONLY");
+  const list = is2D.value ? all.filter(s => s !== "PLM_ONLY") : all.filter(s => s === "PLM_ONLY");
+  return list.map(s => ({ title: scopeLabel(s), value: s }));
 });
+function scopeLabel(s) {
+  const k = `scopes.${s}`;
+  return te(k) ? t(k) : s;
+}
 
 /* drawing_types multi-select — empty = all types (part + assembly) */
 const drawOptions = computed(() => [
@@ -546,9 +556,17 @@ function syncPass() {
 }
 
 function optionsFor(field) {
-  if (Array.isArray(field.options) && field.options.length) return field.options;
-  const map = { severity: props.schema.severities };
-  return map[field.key] || [];
+  const raw = Array.isArray(field.options) && field.options.length
+    ? field.options
+    : { severity: props.schema.severities }[field.key] || [];
+  // severity: raw enum codes (major/minor/info) are cryptic — show localized titles
+  if (field.key === "severity") {
+    return raw.map(v => {
+      const k = `severity.${v}`;
+      return { title: te(k) ? t(k) : v, value: v };
+    });
+  }
+  return raw;
 }
 function labelFor(field) {
   return translateFieldLabel(field.label) + (field.required ? " *" : "");
@@ -578,6 +596,28 @@ function syncCross() {
   if (!form.value) return;
   const { a, op, b } = crossExpr;
   form.value.cross_query = a && b ? `${a} ${op} ${b}` : "";
+  deriveCrossSources();
+}
+
+/* The authority resolver reads operand values from cross_sources — a cross rule without it
+ * silently skips. Derive the map from the chosen operands; keep any existing (possibly
+ * hand-tuned) spec for an operand that is still in use.
+ * vision.<field> values come from the "antet" extractor item; plm.<field> from the PLM card. */
+function deriveCrossSources() {
+  const prev = form.value.cross_sources && typeof form.value.cross_sources === "object" ? form.value.cross_sources : {};
+  const next = {};
+  [crossExpr.a, crossExpr.b].filter(Boolean).forEach(operand => {
+    if (prev[operand]) {
+      next[operand] = prev[operand];
+      return;
+    }
+    const m = operand.match(/^(vision|plm)\.(.+)$/);
+    if (!m) return;
+    next[operand] = m[1] === "vision"
+      ? { source: "vision", item: "antet", field: m[2] }
+      : { source: "plm_card", field: m[2] };
+  });
+  form.value.cross_sources = next;
 }
 
 function addKv(key) {
@@ -607,13 +647,14 @@ function rebuildKvRows() {
   });
 }
 
-/* collect all applicable fields (including hidden — id/category preserved) */
+/* Collect the FULL item — every key on the form, not only the ones /schema knows.
+ * The rule set carries backend-internal fields the schema doesn't list (crop, ocr,
+ * quadrant_fallback, vision_prompt_en, …); copying only schema fields silently
+ * stripped them from any edited rule. */
 function collect() {
-  const out = {};
+  const out = cloneSafe(form.value);
+  delete out.__k; // list row key, UI-internal
   out.enabled = !!form.value.enabled;
-  applicableFields.value.forEach(f => {
-    out[f.key] = cloneSafe(form.value[f.key]);
-  });
   // if both selected, send empty to backend (empty = all types)
   if ("drawing_types" in out) out.drawing_types = normalizeDrawingTypes(out.drawing_types);
   return out;
@@ -646,7 +687,11 @@ const relevantErrors = computed(() => {
   return tagged.length ? tagged : errors.value;
 });
 
-function apply() {
+/* Single-step apply: validate on the backend first, apply only if it passes.
+ * (Replaces the old two-step "Validate, then Apply unlocks" flow.) */
+async function apply() {
+  await runValidate();
+  if (!valid.value) return;
   emit("apply", collect());
 }
 
@@ -663,6 +708,8 @@ function buildForm() {
   rebuildKvRows();
   Object.assign(crossExpr, parseCross(form.value.cross_query));
   Object.assign(passCond, parsePass(form.value.pass_condition));
+  // single valid scope (e.g. PLM/Otorite → PLM_ONLY): set it silently, field is hidden
+  if (scopeOptions.value.length === 1) form.value.scope = scopeOptions.value[0].value;
   validated.value = false;
   valid.value = false;
   errors.value = [];

@@ -1,7 +1,10 @@
 const { merge } = require("webpack-merge");
 const common = require("./webpack.config.common.js");
-const { dev, urls } = require("../widget-config.js");
+const { dev, urls, dashboard } = require("../widget-config.js");
 const webpack = require("webpack");
+
+// Dashboard origin'i hedef ortama göre widget-config'ten gelir (onprem/oncloud preset).
+const DASHBOARD_ORIGIN = (dashboard && dashboard.origin) || "https://3ddashboard25x.metaplm.com";
 
 // use default public value ?
 if (!urls.public) urls.public = urls.local;
@@ -30,7 +33,7 @@ module.exports = merge(
             allowedHosts: "all",
             webSocketServer: "ws",
             headers: {
-                "Access-Control-Allow-Origin": "https://3ddashboard25x.metaplm.com",
+                "Access-Control-Allow-Origin": DASHBOARD_ORIGIN,
                 "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
                 "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Authorization",
                 "Access-Control-Allow-Credentials": "true"
@@ -53,7 +56,7 @@ module.exports = merge(
             },
             proxy: {
                 "/DS": {
-                    target: "https://3ddashboard25x.metaplm.com",
+                    target: DASHBOARD_ORIGIN,
                     changeOrigin: true,
                     secure: false,
                     logLevel: "debug"

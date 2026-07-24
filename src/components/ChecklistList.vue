@@ -79,7 +79,7 @@
                 <span v-if="sec.editable === 'readonly'" class="badge badge--lock"><v-icon size="11">mdi-lock</v-icon></span>
               </td>
               <td class="c-sev">
-                <span class="sev-chip" :style="sevStyle(item.severity)">{{ item.severity || '—' }}</span>
+                <span class="sev-chip" :style="sevStyle(item.severity)">{{ sevLabel(item.severity) }}</span>
               </td>
               <td class="c-agent">
                 <span class="agent-chip" :style="agentStyle(item.agent)">{{ agentLabel(item.agent) }}</span>
@@ -107,7 +107,7 @@
                   </span>
                   <span class="badge badge--lock"><v-icon size="11">mdi-lock</v-icon></span>
                 </td>
-                <td class="c-sev"><span class="sev-chip" :style="sevStyle(item.severity)">{{ item.severity || '—' }}</span></td>
+                <td class="c-sev"><span class="sev-chip" :style="sevStyle(item.severity)">{{ sevLabel(item.severity) }}</span></td>
                 <td class="c-agent"><span class="agent-chip" :style="agentStyle(item.agent)">{{ agentLabel(item.agent) }}</span></td>
                 <td class="c-act" @click.stop>
                   <v-switch :model-value="!!item.enabled" color="primary" density="compact" hide-details inset @update:model-value="$emit('toggle', item)" />
@@ -127,9 +127,9 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { severityColor, groupInfo, GROUP_ORDER, mainAgentOfGroup, groupEditable } from "../js/checklistRules";
+import { severityColor, groupInfo, GROUP_ORDER, mainAgentOfGroup, groupEditable, ruleName } from "../js/checklistRules";
 
-const { t, te } = useI18n();
+const { t, te, locale } = useI18n();
 /** Group label display: translate if in catalog, otherwise show raw (backend) value. */
 function groupLabel(g) {
   const k = `groups.${g}`;
@@ -152,7 +152,13 @@ const fGroup = ref(null);
 const fSeverity = ref(null);
 const fEnabled = ref(null);
 
-const severityOptions = computed(() => props.schema.severities || []);
+const severityOptions = computed(() => (props.schema.severities || []).map(v => ({ title: sevLabel(v), value: v })));
+/** Severity label: localized (Majör/Minör/Bilgi), falls back to the raw enum code. */
+function sevLabel(s) {
+  if (!s) return "—";
+  const k = `severity.${s}`;
+  return te(k) ? t(k) : s;
+}
 const enabledOptions = computed(() => [
   { title: t("checklist.statusActive"), value: "on" },
   { title: t("checklist.statusInactive"), value: "off" }
@@ -174,7 +180,7 @@ function rowKey(item) {
   return item.id || item.__k;
 }
 function displayName(item) {
-  return item.name_en || item.name || t("common.unnamed");
+  return ruleName(item, locale.value) || t("common.unnamed");
 }
 
 /* drawing_types → Part / Assembly chips (empty = all types) */

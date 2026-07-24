@@ -8,10 +8,14 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 // Hermes ajan sohbeti config'i (widget-config.js → hermes); yoksa boş obje.
 let hermesConfig = {};
+let backendConfig = {};
 try {
-    hermesConfig = require("../widget-config.js").hermes || {};
+    const widgetConfig = require("../widget-config.js");
+    hermesConfig = widgetConfig.hermes || {};
+    backendConfig = widgetConfig.backend || {};
 } catch (e) {
     hermesConfig = {};
+    backendConfig = {};
 }
 
 module.exports = {
@@ -83,7 +87,8 @@ module.exports = {
         new webpack.DefinePlugin({
             __VUE_OPTIONS_API__: true,
             __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
-            __HERMES_CONFIG__: JSON.stringify(hermesConfig)
+            __HERMES_CONFIG__: JSON.stringify(hermesConfig),
+            __BACKEND_CONFIG__: JSON.stringify(backendConfig)
         })
         // new BundleAnalyzerPlugin({
         //     analyzerMode: "server",

@@ -100,8 +100,6 @@
     "key": "anahtar",
     "value": "değer",
     "addRow": "Satır ekle",
-    "validateFirst": "Uygulamak için önce doğrula",
-    "validate": "Doğrula",
     "apply": "Uygula",
     "delete": "Sil",
     "sectionGeneral": "Genel",
@@ -203,5 +201,16 @@
       "generic": "Yapay zeka asistanına ulaşılamadı.",
       "http": "İstek başarısız (HTTP {status})."
     }
+  },
+  "severity": {
+    "major": "Majör",
+    "minor": "Minör",
+    "info": "Bilgi"
+  },
+  "scopes": {
+    "FIRST_PAGE_ONLY": "Yalnız ilk sayfa",
+    "ALL_PAGES": "Tüm sayfalar",
+    "ANY_PAGE": "Herhangi bir sayfa",
+    "PLM_ONLY": "Yalnız PLM"
   }
 }

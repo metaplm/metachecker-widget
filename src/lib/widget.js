@@ -81,6 +81,35 @@ const UWA = function() {
  * Mock the libraries provided by 3DDashboard
  */
 const initRequireModules = function() {
+    // Standalone modda 3DDashboard'un platform proxy'si yok; proxifiedRequest'i düz
+    // fetch'e çeviriyoruz (backend CORS'u açık). Hata sözleşmesi API istemcileriyle
+    // uyumlu: onFailure(error, {status, responseText}), type "json" → parse edilmiş gövde.
+    define("DS/WAFData/WAFData", [], () => ({
+        proxifiedRequest: (url, options) => {
+            const o = options || {};
+            const type = o.type || "json";
+            fetch(url, { method: o.method || "GET", headers: o.headers || {}, body: o.data })
+                .then(async res => {
+                    const text = await res.text();
+                    if (!res.ok) {
+                        if (o.onFailure) o.onFailure(res.statusText, { status: res.status, responseText: text });
+                        return;
+                    }
+                    let body = text;
+                    if (type === "json") {
+                        try {
+                            body = text ? JSON.parse(text) : null;
+                        } catch {
+                            body = text;
+                        }
+                    }
+                    if (o.onComplete) o.onComplete(body);
+                })
+                .catch(err => {
+                    if (o.onFailure) o.onFailure((err && err.message) || "network error", { status: 0 });
+                });
+        }
+    }));
     define("DS/TagNavigatorProxy/TagNavigatorProxy", [], () => {
         const TagNavigatorProxy = function() {
             this.createProxy = () => {

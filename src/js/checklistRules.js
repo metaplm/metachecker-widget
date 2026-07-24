@@ -92,6 +92,13 @@ export function crossFields(schema) {
     return (schema && schema.registry && schema.registry.cross_fields) || null;
 }
 
+/** Kural adı, locale'e duyarlı: TR arayüzde Türkçe ad öncelikli, EN'de İngilizce.
+ *  (Sabit `name_en || name` TR arayüzde kural adlarını İngilizce gösteriyordu.) */
+export function ruleName(item, locale) {
+    if (!item) return "";
+    return (locale === "tr" ? item.name || item.name_en : item.name_en || item.name) || "";
+}
+
 /** ajan → marka rengi (chip / accent için) */
 const AGENT_HEX = {
     vision: "#3949AB",

@@ -1,5 +1,5 @@
 /**
- * Dil tercihi istemcisi — KÖK uç: GET https://metachecker.meta-plm.com/lang
+ * Dil tercihi istemcisi — KÖK uç: GET https://metachecker.metaplm.com/lang
  *
  * MetaChecker checklist API'si /api/checklist altında, Hermes /hermes altında;
  * /lang ise KÖKTE. Bu yüzden o iki istemcinin BASE'ini baypas eden ayrı, küçük
@@ -10,7 +10,13 @@
  * hatayı yutup "en"e düşmeli; bu uç widget açılışını ASLA bloklamamalı.
  */
 
-const LANG_URL = "https://metachecker.meta-plm.com/lang";
+/* eslint-disable no-undef */
+const BACKEND = (typeof __BACKEND_CONFIG__ !== "undefined" && __BACKEND_CONFIG__) || {};
+/* eslint-enable no-undef */
+
+// API kökü build sırasında gömülür (widget-config.js → backend.apiBase);
+// yoksa üretim adresine düşer.
+const LANG_URL = (BACKEND.apiBase || "https://metachecker.metaplm.com").replace(/\/+$/, "") + "/lang";
 
 /** 3DDashboard WAFData modülü (varsa). */
 function getWAFData() {

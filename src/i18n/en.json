@@ -100,8 +100,6 @@
     "key": "key",
     "value": "value",
     "addRow": "Add row",
-    "validateFirst": "Validate first to apply",
-    "validate": "Validate",
     "apply": "Apply",
     "delete": "Delete",
     "sectionGeneral": "General",
@@ -203,5 +201,16 @@
       "generic": "Could not reach the AI assistant.",
       "http": "Request failed (HTTP {status})."
     }
+  },
+  "severity": {
+    "major": "Major",
+    "minor": "Minor",
+    "info": "Info"
+  },
+  "scopes": {
+    "FIRST_PAGE_ONLY": "First page only",
+    "ALL_PAGES": "All pages",
+    "ANY_PAGE": "Any page",
+    "PLM_ONLY": "PLM only"
   }
 }

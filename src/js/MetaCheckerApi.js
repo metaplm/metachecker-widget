@@ -12,7 +12,13 @@
  * hiçbir alan/kural hardcode etmez (form /schema ile sürülür).
  */
 
-const BASE = "https://metachecker.meta-plm.com/api/checklist";
+/* eslint-disable no-undef */
+const BACKEND = (typeof __BACKEND_CONFIG__ !== "undefined" && __BACKEND_CONFIG__) || {};
+/* eslint-enable no-undef */
+
+// API kökü build sırasında gömülür (widget-config.js → backend.apiBase);
+// yoksa üretim adresine düşer.
+const BASE = (BACKEND.apiBase || "https://metachecker.metaplm.com").replace(/\/+$/, "") + "/api/checklist";
 
 /**
  * 3DDashboard tarafından sağlanan WAFData modülünü yükler.
