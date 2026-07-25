@@ -23,7 +23,9 @@ module.exports = merge(
         plugins: [
             new webpack.DefinePlugin({
                 __VUE_OPTIONS_API__: true,
-                __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
+                __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
+                // Dev'de standalone serbest (lokal test); prod build'de false — bkz. prod config.
+                __STANDALONE_ALLOWED__: JSON.stringify(true)
             })
         ],
         devServer: {

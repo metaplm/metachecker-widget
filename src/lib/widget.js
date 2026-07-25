@@ -91,6 +91,31 @@ export function isStandalone() {
 }
 
 /**
+ * Standalone moda izin var mı? Build sırasında gömülür:
+ * dev server → true (lokal test), prod build → false.
+ * Prod bundle herkese açık (GitHub Pages) yayınlandığı için platform dışında
+ * çalıştırmayı burada kesiyoruz. Asıl güvenlik sunucu tarafında (nginx IP
+ * allowlist) — bu kapı kullanıcıya düzgün mesaj + caydırıcılık içindir.
+ */
+/* eslint-disable no-undef */
+const STANDALONE_ALLOWED = typeof __STANDALONE_ALLOWED__ !== "undefined" ? __STANDALONE_ALLOWED__ : true;
+/* eslint-enable no-undef */
+
+/** Standalone engellendiğinde gösterilen tam-sayfa mesaj (i18n henüz yok → iki dil). */
+function renderStandaloneBlocked() {
+    document.body.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100vh;' +
+        'font-family:system-ui,Segoe UI,Roboto,sans-serif;background:#012f4d;color:#fff;text-align:center;padding:24px">' +
+        "<div>" +
+        '<div style="font-size:2rem;font-weight:800;margin-bottom:12px">Meta<span style="color:#8fd6ff">Checker</span></div>' +
+        '<div style="font-size:1.05rem;line-height:1.6">' +
+        "This widget only runs inside the 3DEXPERIENCE Dashboard.<br>" +
+        "Bu widget yalnızca 3DEXPERIENCE Dashboard içinde çalışır." +
+        "</div>" +
+        "</div></div>";
+}
+
+/**
  * Mock the libraries provided by 3DDashboard
  */
 const initRequireModules = function() {
@@ -245,6 +270,13 @@ export function initWidget(cbOk, cbError) {
         cbOk(widget);
     } else if (!window.UWA) {
         // 3DDashboard DIŞINDA → uygulama (standalone) modu.
+        // Prod build'de KAPALI (GitHub Pages'ı bulan biri widget'ı dışarıda açamasın):
+        // mock'lar hiç kurulmaz, Vue hiç boot etmez, tek bir API isteği bile çıkmaz.
+        if (!STANDALONE_ALLOWED) {
+            renderStandaloneBlocked();
+            if (cbError) cbError(new Error("standalone mode is disabled in this build"));
+            return;
+        }
         // Platform proxy'si yerine fetch tabanlı WAFData shim'i devreye girer.
         _standalone = true;
         window.widget = new Widget();
