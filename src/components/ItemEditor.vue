@@ -12,7 +12,6 @@
         </div>
         <v-spacer />
         <div class="mc-edit__chips">
-          <span class="ec ec--agent">{{ agentLabel(form.agent) }}</span>
           <span class="ec ec--group">{{ groupLabel }}</span>
           <span class="ec" :class="'ec--' + editable">{{ editLabel }}</span>
         </div>
@@ -222,10 +221,6 @@ function groupDisplay(g) {
   const k = `groups.${g}`;
   return te(k) ? t(k) : g;
 }
-/** Agent label display: code + "Agent" suffix (chip CSS capitalizes first letter). */
-function agentLabel(a) {
-  return a ? `${a} ${t("common.agentSuffix")}` : a;
-}
 /** Field label translation: backend returns Turkish labels, translate to English */
 const FIELD_LABEL_TRANSLATIONS = {
   // Exact field labels served by /schema (keep in sync with backend `fields[].label`)
@@ -236,7 +231,6 @@ const FIELD_LABEL_TRANSLATIONS = {
   "Çizim tipleri": "Drawing types",
   "Prompt (tam)": "Prompt (full)",
   "Batch sorusu (kısa)": "Batch question (short)",
-  "Balon (bbox işaretle)": "Balloon (mark bbox)",
   "Özel toplama": "Custom aggregation",
   "Koşullu (özellik yoksa N/A)": "Conditional (N/A if attribute missing)",
   "PLM sorgusu": "PLM query",
@@ -334,7 +328,6 @@ function translateHelpText(text) {
 
 /** Option (enum/list choice) label translation: backend returns Turkish option titles. */
 const OPTION_LABEL_TRANSLATIONS = {
-  "Balon (bbox işaretle)": "Balloon (mark bbox)",
   "Koşullu (özellik yoksa N/A)": "Conditional (N/A if attribute missing)",
   "Dolu (herhangi bir değer)": "Filled (any value)",
   "Eşittir (== 'X')": "Equals (== 'X')",

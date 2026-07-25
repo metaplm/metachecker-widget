@@ -57,7 +57,7 @@ export function hasGroupModel(schema) {
     return !!(schema && schema.agent_groups && Object.keys(schema.agent_groups).length);
 }
 
-/** Bir ajanın grup bilgisi: {group, role, editable, helper_label?} */
+/** Bir ajanın grup bilgisi: {group, role, editable} */
 export function groupInfo(agent, schema) {
     const ag = schema && schema.agent_groups;
     if (ag && ag[agent]) return ag[agent];

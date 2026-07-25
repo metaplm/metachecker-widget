@@ -338,17 +338,25 @@ function openSave() {
 function isConflict(e) {
   return e && (e.status === 409 || /\b409\b/.test(String(e.message || "")));
 }
+/** Kaydetmeden önce UI-içi alanları at. `__k` liste satır anahtarıdır (ChecklistList.rowKey);
+ *  ItemEditor.collect() yalnız DÜZENLENEN maddeden siliyordu, tam liste POST'unda diğerlerinin
+ *  `__k`'sı config'e yazılıyordu (canlı config'in 34 maddesinin 33'ünde birikmişti). */
+function forPersist(list) {
+  return (list || []).map(({ __k, ...rest }) => rest);
+}
+
 async function doSave() {
   saving.value = true;
   saveErrors.value = [];
   conflict.value = false;
   try {
-    const v = await MetaCheckerApi.validate({ items: items.value, author: author.value, note: note.value });
+    const payload = forPersist(items.value);
+    const v = await MetaCheckerApi.validate({ items: payload, author: author.value, note: note.value });
     if (v && v.valid === false) {
       saveErrors.value = v.errors && v.errors.length ? v.errors : [t("app.err.validateFailed")];
       return;
     }
-    const res = await MetaCheckerApi.save({ items: items.value, author: author.value, note: note.value.trim() });
+    const res = await MetaCheckerApi.save({ items: payload, author: author.value, note: note.value.trim() });
     saveOpen.value = false;
     notify(t("app.msg.saved", { id: res.version_id, count: res.item_count }));
     // §3.1 — backend bazı maddelerde alan (category/prompt/batch_question) otomatik düzeltmiş olabilir

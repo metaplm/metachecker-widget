@@ -29,19 +29,18 @@
           <col style="width: 52px" />
           <col />
           <col style="width: 92px" />
-          <col style="width: 104px" />
           <col style="width: 72px" />
         </colgroup>
         <tbody>
           <template v-for="sec in sections" :key="sec.group">
             <!-- soft, collapsible group header -->
             <tr class="grp-row">
-              <td colspan="5">
+              <td colspan="4">
                 <div class="grp" @click="toggleGroup(sec.group)">
                   <v-icon size="small" class="grp__chev" :class="{ collapsed: isCollapsed(sec.group) }">mdi-chevron-down</v-icon>
                   <span class="grp__bar" :style="{ background: groupColor(sec.group) }"></span>
                   <span class="grp__name">{{ groupLabel(sec.group) }}</span>
-                  <span class="grp__count">{{ sec.mainItems.length + sec.helperItems.length }}</span>
+                  <span class="grp__count">{{ sec.items.length }}</span>
                   <span class="grp__pill" :class="'pill--' + sec.editable">{{ editLabel(sec.editable) }}</span>
                   <span v-if="sec.editable === 'readonly'" class="grp__note">
                     <v-icon size="x-small">mdi-information-outline</v-icon>
@@ -61,9 +60,9 @@
             </tr>
 
             <template v-if="!isCollapsed(sec.group)">
-            <!-- main rows -->
+            <!-- kural satırları -->
             <tr
-              v-for="item in sec.mainItems"
+              v-for="item in sec.items"
               :key="rowKey(item)"
               class="rule-row"
               :class="{ off: !item.enabled }"
@@ -81,39 +80,11 @@
               <td class="c-sev">
                 <span class="sev-chip" :style="sevStyle(item.severity)">{{ sevLabel(item.severity) }}</span>
               </td>
-              <td class="c-agent">
-                <span class="agent-chip" :style="agentStyle(item.agent)">{{ agentLabel(item.agent) }}</span>
-              </td>
               <td class="c-act" @click.stop>
                 <v-switch :model-value="!!item.enabled" color="primary" density="compact" hide-details inset @update:model-value="$emit('toggle', item)" />
               </td>
             </tr>
 
-            <!-- helper agent sub-group (e.g. CATIA) -->
-            <template v-if="sec.helperItems.length">
-              <tr class="sub-row"><td colspan="5"><v-icon size="x-small" class="mr-1">mdi-robot</v-icon>{{ sec.helperLabel }}</td></tr>
-              <tr
-                v-for="item in sec.helperItems"
-                :key="rowKey(item)"
-                class="rule-row helper"
-                :class="{ off: !item.enabled }"
-                @click="$emit('edit', item)"
-              >
-                <td class="c-id">{{ item.id || '—' }}</td>
-                <td class="c-name">
-                  <span class="nm">{{ displayName(item) }}</span>
-                  <span v-for="dt in drawingChips(item)" :key="dt.key" class="type-chip" :style="dt.style">
-                    <v-icon size="11" class="mr-1">{{ dt.icon }}</v-icon>{{ dt.label }}
-                  </span>
-                  <span class="badge badge--lock"><v-icon size="11">mdi-lock</v-icon></span>
-                </td>
-                <td class="c-sev"><span class="sev-chip" :style="sevStyle(item.severity)">{{ sevLabel(item.severity) }}</span></td>
-                <td class="c-agent"><span class="agent-chip" :style="agentStyle(item.agent)">{{ agentLabel(item.agent) }}</span></td>
-                <td class="c-act" @click.stop>
-                  <v-switch :model-value="!!item.enabled" color="primary" density="compact" hide-details inset @update:model-value="$emit('toggle', item)" />
-                </td>
-              </tr>
-            </template>
             </template>
           </template>
         </tbody>
@@ -135,10 +106,9 @@ function groupLabel(g) {
   const k = `groups.${g}`;
   return te(k) ? t(k) : g;
 }
-/** Agent label display: code + "Agent" suffix (chip CSS capitalizes first letter). */
-function agentLabel(a) {
-  return a ? `${a} ${t("common.agentSuffix")}` : a;
-}
+// NOT: Ajan rozeti kolonu kaldırıldı — grup başlığı zaten aynı bilgiyi veriyordu ve ham
+// ajan kodları ("iso Ajan" / "catia Ajan") kullanıcıya ikisi ayrı şeymiş gibi görünüyordu.
+// Rapor da ikisini tek "3D Model" etiketiyle basıyor. Yer kural adına gitti.
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -244,9 +214,10 @@ const sections = computed(() => {
       group,
       editable: groupEditable(group, props.schema),
       addAgent: mainAgentOfGroup(group, props.schema),
-      mainItems: rows.filter(r => r.gi.role !== "helper").map(r => r.item).sort(byCat),
-      helperItems: rows.filter(r => r.gi.role === "helper").map(r => r.item).sort(byCat),
-      helperLabel: rows.find(r => r.gi.role === "helper")?.gi.helper_label || t("checklist.helperFallback")
+      // Tek liste: "yardımcı ajan" alt grubu kaldırıldı. iso/catia ayrımı bir uygulama
+      // detayıydı (iso'da vision_prompt var → hata capture'da işaretlenebiliyor); kullanıcı
+      // için ikisi de aynı 3D kontrolü ve raporda zaten tek "3D Model" etiketiyle çıkıyor.
+      items: rows.map(r => r.item).sort(byCat)
     });
   });
   return out;
@@ -275,10 +246,6 @@ const AGENT_HEX = {
 };
 function agentHex(agent) {
   return AGENT_HEX[agent] || "#607D8B";
-}
-function agentStyle(agent) {
-  const c = agentHex(agent);
-  return { color: c, borderColor: c + "66", background: c + "14" };
 }
 function groupColor(group) {
   const a = mainAgentOfGroup(group, props.schema);
@@ -362,13 +329,6 @@ function editLabel(e) {
   color: #78909c;
 }
 
-.sub-row td {
-  padding: 4px 12px 2px 28px;
-  font-size: 0.72rem;
-  font-style: italic;
-  color: #90a4ae;
-}
-
 /* satırlar */
 .rule-row {
   cursor: pointer;
@@ -388,14 +348,10 @@ function editLabel(e) {
 .rule-row.off {
   opacity: 0.5;
 }
-.rule-row.helper td:first-child {
-  padding-left: 28px;
-}
 
 .c-id { width: 56px; font-family: "Courier New", monospace; font-size: 0.8rem; color: #455a64; }
 .c-name { }
 .c-sev { width: 92px; }
-.c-agent { width: 104px; text-align: right; }
 .c-act { text-align: right; padding-right: 8px !important; padding-left: 0 !important; }
 .c-act :deep(.v-switch) {
   justify-content: flex-end;
@@ -405,8 +361,7 @@ function editLabel(e) {
 .c-act :deep(.v-switch .v-selection-control) { min-height: 20px; }
 .c-act :deep(.v-selection-control__wrapper) { margin-right: 0; }
 
-.sev-chip,
-.agent-chip {
+.sev-chip {
   display: inline-block;
   padding: 1px 9px;
   border-radius: 11px;
