@@ -12,18 +12,16 @@
  * Transport: MetaCheckerApi ile aynı sebeple WAFData.proxifiedRequest (3DDashboard iframe
  * CSP/mixed-content/cookie kısıtlarını proxy aşar). WAFData yoksa (lokal/standalone) fetch'e düşer.
  *
- * Auth: her istekte `Authorization: Bearer <API_SERVER_KEY>`.
- * Anahtar build sırasında __HERMES_CONFIG__ ile gömülür (widget-config.js → hermes).
+ * Auth: İSTEMCİDE ANAHTAR YOK. İstek MetaChecker API'sindeki /api/hermes proxy'sine gider,
+ * `Authorization: Bearer <API_SERVER_KEY>` başlığını SUNUCU ekler. Bundle GitHub Pages'ta
+ * herkese açık yayınlandığı için gömülü her sır indirilebilir durumdaydı (25 Tem 2026).
  */
 
 /* eslint-disable no-undef */
 const CFG = (typeof __HERMES_CONFIG__ !== "undefined" && __HERMES_CONFIG__) || {};
 /* eslint-enable no-undef */
 
-const BASE = CFG.baseUrl || "https://metachecker.meta-plm.com/hermes";
-const RAW_KEY = CFG.apiKey || "";
-// Placeholder hâlâ doldurulmamışsa "anahtar yok" say (UI uyarısı tetiklensin).
-const API_KEY = RAW_KEY === "PUT_API_SERVER_KEY_HERE" ? "" : RAW_KEY;
+const BASE = CFG.baseUrl || "https://metachecker.meta-plm.com/api/hermes";
 const MODEL = CFG.model || "MetaChecker Hermes";
 
 /** 3DDashboard WAFData modülü (varsa) */
@@ -43,9 +41,8 @@ function delay(ms) {
 }
 
 function authHeaders(extra) {
-    const h = { "Content-Type": "application/json" };
-    if (API_KEY) h.Authorization = `Bearer ${API_KEY}`;
-    return Object.assign(h, extra || {});
+    // Authorization YOK — proxy ekliyor (bkz. dosya başı).
+    return Object.assign({ "Content-Type": "application/json" }, extra || {});
 }
 
 /**
@@ -110,9 +107,10 @@ const HermesApi = {
     /** Kullanılacak model adı (capabilities/models'tan değil, gömülü default). */
     modelName: MODEL,
 
-    /** Anahtar gömülü mü? (UI uyarısı için) */
+    /** Geriye-uyum: anahtar artık sunucuda; istemci tarafında eksik anahtar durumu yok.
+     *  (HermesChat bunu "anahtar yok" uyarısı için çağırıyor.) */
     hasKey() {
-        return !!API_KEY;
+        return true;
     },
 
     /** Sağlık: 200 → true. Hata → false (atmaz). */

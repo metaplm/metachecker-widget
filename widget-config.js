@@ -94,13 +94,13 @@ const cfg = {
         origin: p.dashboardOrigin
     },
 
-    // Hermes ajan sohbeti (OpenAI-uyumlu). GERÇEK anahtar repoya GİRMEZ: CI'da
-    // (GitHub Actions secret HERMES_API_KEY) placeholder sed ile değiştirilir.
-    // Taban, backend ile aynı hosttan /hermes yoluna gider.
+    // Hermes ajan sohbeti. ANAHTAR YOK — bu bundle GitHub Pages'ta herkese açık yayınlanıyor
+    // ve gömülen her sır `curl <chunk>.bundle.js` ile okunabiliyordu. İstek MetaChecker
+    // API'sindeki /api/hermes proxy'sine gider; Bearer'ı sunucu kendi ortamından ekler
+    // (HERMES_API_KEY). CI'daki sed adımı artık eşleşme bulamaz — zararsız no-op.
     hermes: {
-        baseUrl: `${p.apiBase}/hermes`,
-        model: "MetaChecker Hermes",
-        apiKey: "PUT_API_SERVER_KEY_HERE"
+        baseUrl: `${p.apiBase}/api/hermes`,
+        model: "MetaChecker Hermes"
     },
 
     dev: {
